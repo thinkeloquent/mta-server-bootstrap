@@ -21,7 +21,7 @@
 PY_DIR  := fastapi_server
 NPM_DIR := fastify_server
 
-PYTHON ?= python3
+PYTHON ?= python3.11
 TWINE  ?= twine
 NPM    ?= npm
 

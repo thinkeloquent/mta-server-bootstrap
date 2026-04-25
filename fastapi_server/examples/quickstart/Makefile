@@ -15,7 +15,7 @@ SHELL       := /bin/bash
 .DEFAULT_GOAL := help
 
 POETRY      ?= poetry
-PYTHON      ?= python
+PYTHON      ?= python3.11
 PARENT_DIR  := ../..
 
 ENTRY       := main.py

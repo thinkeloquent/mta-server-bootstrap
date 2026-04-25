@@ -9,7 +9,7 @@ description = "Runtime-neutral polyglot bootstrap orchestrator for FastAPI with 
 readme = "README.md"
 license = { text = "MIT" }
 license-files = ["LICENSE"]
-requires-python = ">=3.11"
+requires-python = ">=3.11.4,<3.12"
 authors = [{ name = "Think Eloquent" }]
 keywords = ["fastapi", "bootstrap", "orchestrator", "plugin-system", "asgi", "polyglot"]
 classifiers = [

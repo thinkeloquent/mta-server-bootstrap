@@ -7,6 +7,8 @@ import { discoverFiles } from "./_discover.js";
 
 const LIFECYCLE_SUFFIXES = [".lifecycle.mjs", ".lifecycle.js"] as const;
 
+export const ALLOW_DEFAULT_FN_SHAPE = true;
+
 interface LifecycleModule {
   default?: unknown;
   onInit?: HookFn;
@@ -51,6 +53,9 @@ export const lifecycleAddon: Addon = {
           ? (mod.default as LifecycleModule)
           : mod;
 
+        const defaultFn =
+          typeof mod.default === "function" ? (mod.default as HookFn) : undefined;
+
         const hooks: string[] = [];
         if (typeof source.onInit === "function") {
           ctx.registerInitHook(source.onInit);
@@ -70,6 +75,14 @@ export const lifecycleAddon: Addon = {
         if (hooks.length > 0) {
           report.registered += 1;
           log.registered(file, hooks.join("+"));
+          if (ALLOW_DEFAULT_FN_SHAPE && defaultFn) {
+            log.skipped(file, "default ignored: named hooks present");
+          }
+        } else if (ALLOW_DEFAULT_FN_SHAPE && defaultFn) {
+          ctx.registerInitHook(defaultFn);
+          initCount += 1;
+          report.registered += 1;
+          log.registered(file, "init(default)");
         } else {
           report.skipped += 1;
           log.skipped(file, "no onInit/onStartup/onShutdown export");

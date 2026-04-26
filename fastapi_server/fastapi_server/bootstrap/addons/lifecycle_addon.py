@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import inspect
+
 from fastapi_server.bootstrap.contract import create_loader_report
 from fastapi_server.bootstrap.registry.registry import Addon
 from fastapi_server.bootstrap.registry.loader_logger import create_loader_logger
 from fastapi_server.bootstrap.addons._discover import discover_files, import_file
 
 _SUFFIXES = (".lifecycle.py",)
+
+ALLOW_DEFAULT_FN_SHAPE = True
 
 
 def _run(_server, config, ctx):
@@ -38,6 +42,7 @@ def _run(_server, config, ctx):
             on_init = getattr(mod, "on_init", None)
             on_startup = getattr(mod, "on_startup", None)
             on_shutdown = getattr(mod, "on_shutdown", None)
+            default_fn = getattr(mod, "default", None) or getattr(mod, "main", None)
 
             hooks = []
             if callable(on_init):
@@ -56,6 +61,21 @@ def _run(_server, config, ctx):
             if hooks:
                 report.registered += 1
                 log.registered(file, "+".join(hooks))
+                if ALLOW_DEFAULT_FN_SHAPE and callable(default_fn):
+                    log.skipped(file, "default ignored: named hooks present")
+            elif ALLOW_DEFAULT_FN_SHAPE and callable(default_fn):
+                if inspect.iscoroutinefunction(default_fn):
+                    ctx.register_init_hook(default_fn)
+                else:
+                    sync_fn = default_fn
+
+                    async def _wrapped(*args, _fn=sync_fn, **kwargs):
+                        return _fn(*args, **kwargs)
+
+                    ctx.register_init_hook(_wrapped)
+                init_count += 1
+                report.registered += 1
+                log.registered(file, "init(default)")
             else:
                 report.skipped += 1
                 log.skipped(file, "no on_init/on_startup/on_shutdown export")

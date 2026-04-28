@@ -48,6 +48,10 @@ export async function setup<Server>(
       logger.warn(
         `addon ${name}: ${r.errors.length} error(s); discovered=${r.discovered} registered=${r.registered}`,
       );
+      for (const [i, e] of r.errors.entries()) {
+        const where = e.path ? ` ${e.path}` : "";
+        logger.error(`  addon ${name} error[${i}] step=${e.step}${where}: ${e.error}`);
+      }
     } else {
       logger.info(
         `addon ${name}: discovered=${r.discovered} registered=${r.registered} skipped=${r.skipped}`,

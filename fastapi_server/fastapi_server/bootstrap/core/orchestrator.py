@@ -54,6 +54,9 @@ async def setup(
             logger.warn(
                 f"addon {name}: {len(r.errors)} error(s); discovered={r.discovered} registered={r.registered}"
             )
+            for i, e in enumerate(r.errors):
+                where = f" {e.path}" if e.path else ""
+                logger.error(f"  addon {name} error[{i}] step={e.step}{where}: {e.error}")
         else:
             logger.info(
                 f"addon {name}: discovered={r.discovered} registered={r.registered} skipped={r.skipped}"

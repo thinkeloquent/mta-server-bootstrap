@@ -36,7 +36,9 @@ class LoaderLogger:
     def failed(self, step: str, target: Optional[str], err: object) -> None:
         msg = str(err) if not isinstance(err, BaseException) else (str(err) or err.__class__.__name__)
         target_part = f" {target}" if target else ""
-        self.logger.info(f"{self._tag} FAIL [{step}]{target_part}: {msg}")
+        # error() so the addon's swallowed failures land on stderr — without
+        # this, ImportError-level breakage looks like normal stdout output.
+        self.logger.error(f"{self._tag} FAIL [{step}]{target_part}: {msg}")
         report_error(self.report, step, err, target)
 
 

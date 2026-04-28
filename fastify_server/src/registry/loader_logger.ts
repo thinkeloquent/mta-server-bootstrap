@@ -35,7 +35,10 @@ export function createLoaderLogger(
     },
     failed(step, target, err) {
       const msg = err instanceof Error ? err.message : String(err);
-      logger.info(`${tag} FAIL [${step}]${target ? ` ${target}` : ""}: ${msg}`);
+      // error() so swallowed addon failures land on stderr (fastify.error.log)
+      // instead of looking like ordinary stdout. Pass the raw err so the
+      // consoleLogger surfaces stack/cause on a follow-up line.
+      logger.error(`${tag} FAIL [${step}]${target ? ` ${target}` : ""}: ${msg}`, err);
       reportError(report, step, err, target);
     },
   };

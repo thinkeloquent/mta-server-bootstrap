@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass
 from typing import Any, Callable, Protocol
 
@@ -20,14 +21,16 @@ class Logger(Protocol):
 
 
 class StdoutLogger:
+    # info/debug → stdout; warn/error → stderr so dev-mode redirection
+    # (`> *.log 2> *.error.log`) routes severities to the right file.
     def info(self, msg: str, *args: Any) -> None:
         print("[polyglot]", msg, *args)
 
     def warn(self, msg: str, *args: Any) -> None:
-        print("[polyglot:warn]", msg, *args)
+        print("[polyglot:warn]", msg, *args, file=sys.stderr)
 
     def error(self, msg: str, *args: Any) -> None:
-        print("[polyglot:error]", msg, *args)
+        print("[polyglot:error]", msg, *args, file=sys.stderr)
 
     def debug(self, msg: str, *args: Any) -> None:
         if os.environ.get("POLYGLOT_DEBUG"):
